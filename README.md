@@ -8,10 +8,10 @@
 [![WCAG 2.1 AA](https://img.shields.io/badge/Accessibility-WCAG_2.1_AA-8A6116?style=flat-square)](#accessibility--wcag-21-aa-compliance)
 [![Amplify Deploy](https://img.shields.io/badge/Deploy-AWS_Amplify_Ready-FF9900?style=flat-square&logo=aws-amplify)](deployment-guide.md)
 
-**Live Demo:** *(Deploy `preflight-amplify.zip` to AWS Amplify Hosting → paste live HTTPS URL here)*  
+**Live Demo:** _(Deploy `preflight-amplify.zip` to AWS Amplify Hosting → paste live HTTPS URL here)_  
 **Landing Page:** [`landing.html`](landing.html)  
 **Deployment Guide for Account Holder:** [`deployment-guide.md`](deployment-guide.md)  
-**Track:** AWS First Commit / Best UI Track  
+**Track:** AWS First Commit
 **Core Technologies:** Vanilla HTML5 / Modern CSS3 / Client-Side JavaScript ES6+, AWS Amplify Hosting, AWS Lambda (Python 3.12), Amazon Bedrock (Converse API)
 
 ---
@@ -35,9 +35,10 @@
 ## 🎯 Executive Summary
 
 Third-party sellers account for over **60% of all physical units sold on Amazon**, representing millions of small-to-medium businesses. However, Amazon enforces marketplace policies using aggressive automated detection bots. When an account is suspended:
+
 - **Payouts are frozen instantly** (often tens of thousands of dollars in operating capital).
 - **FBA inventory is stranded**, incurring compounding storage fees.
-- **Sellers have a strictly limited number of appeal attempts** before receiving the dreaded *"We may not respond to further emails about this issue"* final rejection.
+- **Sellers have a strictly limited number of appeal attempts** before receiving the dreaded _"We may not respond to further emails about this issue"_ final rejection.
 
 When writing an appeal (Plan of Action or POA), panicking sellers routinely make fatal structural, rhetorical, and evidentiary errors. These appeals are rejected by automated classifiers in under **4 minutes** without human explanation.
 
@@ -54,15 +55,19 @@ When writing an appeal (Plan of Action or POA), panicking sellers routinely make
 </p>
 
 ### 1. The Economics of Suspension
+
 When an Amazon seller receives an account deactivation notice:
+
 - **Cash Flow Paralysis:** Amazon holds 100% of sales proceeds in escrow. Sellers cannot meet supplier obligations, pay employees, or service debt.
 - **Listing Decay:** ASIN organic search rankings plummet within 72 hours of inventory being unavailable.
 - **High-Cost Exploitation:** Desperate sellers turn to unscrupulous "appeal consultants" charging $2,500 to $5,000 upfront with zero guarantee of success.
 
 ### 2. The 4-Minute Automated Bot Rejection
+
 Contrary to seller belief, human investigators do not read appeals from start to finish upon submission. The first line of defense is an **automated NLP classifier** that scans incoming submissions for mandatory sections, past-tense remediation markers, and fatal disqualifiers. If the document fails structural heuristics, an automated rejection email is triggered in approximately 4 minutes.
 
 ### 3. The 3 Fatal Traps of the "Panic Appeal"
+
 Based on extensive analysis of Amazon Seller Central forum disputes and consulting case studies, over 80% of rejected appeals fail due to predictable structural errors:
 
 ```
@@ -113,6 +118,7 @@ flowchart LR
 ```
 
 ### The 3-Step Reinstatement Blueprint
+
 1. **Multi-Category Ingestion:** The seller selects their enforcement type (`Inauthentic Items`, `Late Shipment Rate`, `Intellectual Property`, `Review Policy`). Preflight loads category-specific heuristics, such as requiring verified distributor invoice citations for Section 3 claims.
 2. **Instant Structural Audit:** In under 3ms, Preflight checks for line-start and inline section headers, past-tense verb completion, supplier invoice citations, audit cadences, and named manager roles. Failing phrases are highlighted in-place in translucent red and amber.
 3. **1-Click Auto-Fix & Executive Export:** Sellers can click **"Auto-Fix POA"** to watch the sequencer resolve flaws live, climbing from 13 to 100. With 1 click, sellers can print an executive 3-part POA or copy it directly into their Seller Central case.
@@ -170,9 +176,11 @@ flowchart LR
 ```
 
 ### Why Zero-Trust Privacy Matters
-Suspended sellers handle confidential business data: wholesale invoices, unit costs, supplier contact numbers, and customer names. Uploading this data to a third-party server creates serious compliance and security risks. 
+
+Suspended sellers handle confidential business data: wholesale invoices, unit costs, supplier contact numbers, and customer names. Uploading this data to a third-party server creates serious compliance and security risks.
 
 In Preflight:
+
 1. **100% Local Execution:** Parsing, regular expressions, scoring, and text highlights execute entirely inside the client browser using vanilla JavaScript.
 2. **Offline LocalStorage Autosave:** Draft text and violation category are autosaved on debounced input to browser `localStorage` (`preflight_poa_draft_v1`), ensuring sellers never lose progress if a tab closes.
 3. **Prompt Fencing at Cloud Ingress:** When an optional AI second opinion is requested, untrusted POA text is explicitly sanitized and fenced in `<poa>DATA</poa>` tags inside AWS Lambda before invocation with Amazon Bedrock Converse API.
@@ -194,20 +202,22 @@ pie title 7 Scoring Dimensions Weight Distribution
     "Length & Readability" : 8
 ```
 
-| Dimension | Weight | Key Checks & Failure Patterns |
-|---|:---:|---|
-| **1. Root Cause Specificity** | **22%** | Flags vague causes (`RC_VAGUE`), blame-shifting (`RC_BLAME`), and denial of violation (`RC_DENIAL`). Checks for specific dates, quantities, and operational SOP references. |
-| **2. Corrective Actions Completed** | **18%** | Flags future-tense intentions (`CA_FUTURE`). Demands past-tense verbs: unit quarantine, removal order IDs, customer refunds, and supplier invoices (`CA_NO_INVOICE`). |
+| Dimension                           | Weight  | Key Checks & Failure Patterns                                                                                                                                                  |
+| ----------------------------------- | :-----: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **1. Root Cause Specificity**       | **22%** | Flags vague causes (`RC_VAGUE`), blame-shifting (`RC_BLAME`), and denial of violation (`RC_DENIAL`). Checks for specific dates, quantities, and operational SOP references.    |
+| **2. Corrective Actions Completed** | **18%** | Flags future-tense intentions (`CA_FUTURE`). Demands past-tense verbs: unit quarantine, removal order IDs, customer refunds, and supplier invoices (`CA_NO_INVOICE`).          |
 | **3. Preventive Systemic Controls** | **20%** | Flags empty promises (`PREV_VAGUE`). Verifies recurring audit cadences (`PREV_NO_CADENCE`), named responsible manager roles (`PREV_NO_OWNER`), and supplier verification SOPs. |
-| **4. Evidence & Invoices** | **12%** | Verifies presence of authorized distributor names, invoice numbers, valid ASINs (`B0[A-Z0-9]{8}`), order IDs, and carrier tracking documentation. |
-| **5. Tone & Objectivity** | **10%** | Flags emotional pleading (`TONE_EMOTIONAL`), threats of legal action or arbitration (`TONE_COMBATIVE`), and excuses (`TONE_EXCUSES`). Enforces dispassionate business prose. |
-| **6. Structure & 3-Part Layout** | **10%** | Detects mandatory 3-part sections both as line headers and inline text (`STRUCT_NO_SECTIONS`). Penalizes wall-of-text formatting and out-of-order sections. |
-| **7. Length & Readability** | **8%** | Penalizes appeals under 150 words (`LEN_TOO_SHORT`, critical) or over 900 words (`LEN_TOO_LONG`). Enforces target 250–700 word executive sweet spot. |
+| **4. Evidence & Invoices**          | **12%** | Verifies presence of authorized distributor names, invoice numbers, valid ASINs (`B0[A-Z0-9]{8}`), order IDs, and carrier tracking documentation.                              |
+| **5. Tone & Objectivity**           | **10%** | Flags emotional pleading (`TONE_EMOTIONAL`), threats of legal action or arbitration (`TONE_COMBATIVE`), and excuses (`TONE_EXCUSES`). Enforces dispassionate business prose.   |
+| **6. Structure & 3-Part Layout**    | **10%** | Detects mandatory 3-part sections both as line headers and inline text (`STRUCT_NO_SECTIONS`). Penalizes wall-of-text formatting and out-of-order sections.                    |
+| **7. Length & Readability**         | **8%**  | Penalizes appeals under 150 words (`LEN_TOO_SHORT`, critical) or over 900 words (`LEN_TOO_LONG`). Enforces target 250–700 word executive sweet spot.                           |
 
 ### The Critical Override Principle
-Amazon appeals fail on binary disqualifiers. If *any* check fires a `critical` severity finding (e.g., blaming Amazon, denying the violation, or threatening legal action), the final score is **capped at 49 (WOULD BE REJECTED)**, regardless of how strong other sections are.
+
+Amazon appeals fail on binary disqualifiers. If _any_ check fires a `critical` severity finding (e.g., blaming Amazon, denying the violation, or threatening legal action), the final score is **capped at 49 (WOULD BE REJECTED)**, regardless of how strong other sections are.
 
 ### Calibrated No-Headings Band
+
 An appeal lacking the required 3 headers (`STRUCT_NO_SECTIONS`) is marked `high` severity and **capped at 74 (AT RISK)**. This ensures a well-written prose appeal is never falsely marked "Likely to Pass" while avoiding unfair disqualification.
 
 ---
@@ -215,20 +225,26 @@ An appeal lacking the required 3 headers (`STRUCT_NO_SECTIONS`) is marked `high`
 ## 🚀 Interactive Feature Tour
 
 ### 1. Amazon Brand Tonal Language (Light Theme)
+
 Designed with Amazon brand design discipline:
+
 - **Surfaces:** `#EAEDED` neutral page ground, `#FFFFFF` crisp card surfaces, and `#D5D9D9` subtle borders.
 - **Top Bar:** Squid-ink navy (`#232F3E`) with high-contrast text (`13.57:1` contrast).
 - **Orange Discipline:** `--cta-bg: #FF9900` is reserved strictly for button fills with dark `#0F1111` text (`8.85:1` contrast).
 - **Status Contrast:** Red (`#B12704`), Dark Ochre (`#8A6116`), and Green (`#067D62`) are reserved exclusively for verdicts and severities.
 
 ### 2. Synchronized Textarea Highlight Backdrop
+
 Offending phrases are highlighted in-place in translucent red (`rgba(177, 39, 4, 0.16)`) and amber (`rgba(138, 97, 22, 0.16)`). The underlying backdrop layer scrolls and wraps in pixel-perfect synchronization with the textarea.
 
 ### 3. Auto-Fix Sequencer with 20-Entry Undo Stack
+
 Clicking **"Auto-Fix POA"** iteratively resolves detected flaws one-by-one with 280ms visual pauses, allowing sellers to watch their score climb on screen from **13 to 100**. Full undo support is provided via the toolbar button, `Ctrl/Cmd+Z` keyboard shortcut, or the toast notification action.
 
 ### 4. Executive 3-Part POA Print Stylesheet
+
 Clicking **"Print"** (or `Ctrl+P`) activates `@media print` rules:
+
 - Completely hides all UI chrome, controls, sidebars, buttons, and modals.
 - Formats the appeal cleanly with Georgia 11pt serif typography, 1.75 line-height, and an official document header detailing category and date.
 
@@ -237,24 +253,27 @@ Clicking **"Print"** (or `Ctrl+P`) activates `@media print` rules:
 ## 📝 Real-World Case Study: Before vs. After
 
 ### Before Preflight: Failing 13/100 Appeal (Inauthentic Suspension)
+
 ```text
 Dear Amazon Seller Support,
 
-This deactivation is unfair because we are innocent! The customer complaint was false and 
-your automated system glitched. We did not violate Section 3. 
+This deactivation is unfair because we are innocent! The customer complaint was false and
+your automated system glitched. We did not violate Section 3.
 
-We will be more careful in the future and we will train our team to inspect items. 
-We promise this will never happen again. Please reinstate our account immediately, 
+We will be more careful in the future and we will train our team to inspect items.
+We promise this will never happen again. Please reinstate our account immediately,
 our family livelihood depends on this business!
 ```
+
 - **Score:** 13 / 100 — **WOULD BE REJECTED**
 - **Disqualifiers Triggered:** `RC_BLAME` ("system glitched"), `RC_DENIAL` ("we are innocent"), `CA_FUTURE` ("we will train"), `TONE_EMOTIONAL` ("family livelihood"), `CA_NO_INVOICE` (missing supplier invoice).
 
 ### After Preflight Auto-Fix: Passing 100/100 Appeal
+
 ```text
 1. ROOT CAUSE ANALYSIS:
-On March 12, 2026, we received an inauthentic item complaint for ASIN B07X4K8L9P. 
-Our receiving workflow failed to cross-reference supplier invoice documentation 
+On March 12, 2026, we received an inauthentic item complaint for ASIN B07X4K8L9P.
+Our receiving workflow failed to cross-reference supplier invoice documentation
 against authorized brand distributor manifests prior to warehouse ingestion.
 
 2. IMMEDIATE CORRECTIVE ACTIONS:
@@ -267,6 +286,7 @@ against authorized brand distributor manifests prior to warehouse ingestion.
 - Scheduled recurring bi-weekly compliance audits for all supplier documentation.
 - Restricted supplier onboarding exclusively to brand-authorized distributors.
 ```
+
 - **Score:** 100 / 100 — **LIKELY TO PASS**
 - **Improvements:** Clean 3-part layout, completed past-tense removal orders, verified supplier invoice citation, named manager role, and bi-weekly audit cadence.
 
@@ -283,21 +303,23 @@ against authorized brand distributor manifests prior to warehouse ingestion.
 
 ## 🎬 3-Minute Video Pitch Script
 
-| Time | Visual / Screen Action | Speaking Beat |
-|---|---|---|
-| **0:00–0:20** | Show Seller Central forum screenshot: *"Appeal rejected in 4 minutes?!"* | *"When an Amazon seller is suspended, payouts freeze and inventory locks. Panicked sellers submit appeals that automated bots reject in 4 minutes without explanation. Each failed attempt burns time and hurts account standing."* |
-| **0:20–0:50** | Click **"Fail (13)"** or **"Load Bad Example"** in Preflight. | *"We paste a real seller draft. The verdict immediately slams to red: 13/100, WOULD BE REJECTED, with 4 critical disqualifiers. Check 1: 'system glitched' is flagged as blame-shifting. Check 2: 'I will be more careful' is flagged because corrective actions must be completed, not future intentions. Offending phrases are highlighted in red directly in the editor."* |
-| **0:50–1:40** | Click **"Auto-Fix POA"** and watch the score climb live on camera. | *(Say nothing for 3 seconds — let the score climb).* *"Watch this: We click Auto-Fix. The sequencer resolves each flaw step-by-step. The score visibly climbs on screen — 13 to 35, 58, 80, and lands on 100: LIKELY TO PASS. Notice the difference: three labeled sections, named supplier invoices, past-tense removal orders, and a named manager with a weekly audit cadence."* |
-| **1:40–2:10** | Show Architecture diagram & Privacy boundary. | *"Preflight runs 100% client-side in the browser. Zero server dependency, complete seller privacy, and automatic local session persistence. For deeper nuance, the architecture connects optionally to AWS Lambda and Amazon Bedrock Converse API, with POA text fenced strictly as data."* |
-| **2:10–2:35** | Honesty beat: Scope & Ethics. | *"Preflight is not legal advice and does not guarantee reinstatement. But it eliminates the unforced structural errors that cause 80% of automated rejections before an investigator even reads the appeal. Sellers can print a clean, executive copy ready for submission with one click."* |
-| **2:35–3:00** | What I learned on AWS. | *"Building for this hackathon, our biggest breakthrough came from fixing a spec bug: we originally marked missing headings as critical, falsely rejecting great prose appeals. Demoting it to high and calibrating it to AT RISK taught us how real-world compliance tools must balance strictness with fairness."* |
+| Time          | Visual / Screen Action                                                   | Speaking Beat                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **0:00–0:20** | Show Seller Central forum screenshot: _"Appeal rejected in 4 minutes?!"_ | _"When an Amazon seller is suspended, payouts freeze and inventory locks. Panicked sellers submit appeals that automated bots reject in 4 minutes without explanation. Each failed attempt burns time and hurts account standing."_                                                                                                                                                 |
+| **0:20–0:50** | Click **"Fail (13)"** or **"Load Bad Example"** in Preflight.            | _"We paste a real seller draft. The verdict immediately slams to red: 13/100, WOULD BE REJECTED, with 4 critical disqualifiers. Check 1: 'system glitched' is flagged as blame-shifting. Check 2: 'I will be more careful' is flagged because corrective actions must be completed, not future intentions. Offending phrases are highlighted in red directly in the editor."_       |
+| **0:50–1:40** | Click **"Auto-Fix POA"** and watch the score climb live on camera.       | _(Say nothing for 3 seconds — let the score climb)._ _"Watch this: We click Auto-Fix. The sequencer resolves each flaw step-by-step. The score visibly climbs on screen — 13 to 35, 58, 80, and lands on 100: LIKELY TO PASS. Notice the difference: three labeled sections, named supplier invoices, past-tense removal orders, and a named manager with a weekly audit cadence."_ |
+| **1:40–2:10** | Show Architecture diagram & Privacy boundary.                            | _"Preflight runs 100% client-side in the browser. Zero server dependency, complete seller privacy, and automatic local session persistence. For deeper nuance, the architecture connects optionally to AWS Lambda and Amazon Bedrock Converse API, with POA text fenced strictly as data."_                                                                                         |
+| **2:10–2:35** | Honesty beat: Scope & Ethics.                                            | _"Preflight is not legal advice and does not guarantee reinstatement. But it eliminates the unforced structural errors that cause 80% of automated rejections before an investigator even reads the appeal. Sellers can print a clean, executive copy ready for submission with one click."_                                                                                        |
+| **2:35–3:00** | What I learned on AWS.                                                   | _"Building for this hackathon, our biggest breakthrough came from fixing a spec bug: we originally marked missing headings as critical, falsely rejecting great prose appeals. Demoting it to high and calibrating it to AT RISK taught us how real-world compliance tools must balance strictness with fairness."_                                                                 |
 
 ---
 
 ## ⚡ Step-by-Step Quickstart & Deployment
 
 ### Run Locally (Zero Build Step)
+
 Clone this repository and open `index.html` directly in any modern browser:
+
 ```bash
 git clone https://github.com/Manushprajwal7/z1.git
 cd z1
@@ -307,6 +329,7 @@ start index.html # On Windows
 ```
 
 ### Deploy to AWS Amplify Hosting (~90 Seconds)
+
 1. Use `preflight-amplify.zip` from the repository root (or click **"Amplify .zip"** in the web app).
 2. Open the [AWS Amplify Console](https://console.aws.amazon.com/amplify/).
 3. Choose **Deploy without Git provider** → App name: `preflight-poa`.
@@ -328,6 +351,7 @@ node test_edge.js
 ```
 
 ### Automated Test Output
+
 ```text
 === VERIFYING ALL SAMPLE CATEGORIES ===
 Testing category: inauthentic (Inauthentic Items / Documentation)

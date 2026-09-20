@@ -242,9 +242,17 @@ button, input, select, textarea {
 /* 5. Main Two-Column Grid */
 .main-content {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-  gap: 20px;
+  grid-template-columns: minmax(0, 1.22fr) minmax(0, 0.98fr);
+  gap: 22px;
   flex: 1;
+  align-items: start;
+}
+
+@media (min-width: 961px) {
+  .column-verdict {
+    position: sticky;
+    top: 20px;
+  }
 }
 
 @media (max-width: 960px) {
@@ -392,8 +400,31 @@ button, input, select, textarea {
 .editor-actions {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.action-btn-cluster {
+  display: flex;
+  align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-divider {
+  width: 1px;
+  height: 24px;
+  background-color: var(--border-subtle);
+  margin: 0 4px;
+}
+
+@media (max-width: 900px) {
+  .action-divider {
+    display: none;
+  }
 }
 
 /* Buttons System */
@@ -1159,7 +1190,7 @@ button, input, select, textarea {
 
 .dim-row {
   display: grid;
-  grid-template-columns: 140px 1fr 34px;
+  grid-template-columns: 165px 1fr 34px;
   align-items: center;
   gap: 12px;
 }
