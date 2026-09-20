@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preflight — Amazon Seller Appeal (POA) Pre-Screener</title>
+  <meta name="description" content="Private, deterministic pre-submission analyzer for Amazon seller suspension appeals (Plan of Action). Catch automated rejections before spending your attempt.">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
+</head>
+<body>
+  <!-- App Container -->
+  <div class="app-layout">
+    
+    <!-- Navigation / Top Header -->
+    <header class="app-header">
+      <div class="header-branding">
+        <div class="brand-logo-mark">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 2L11 13"></path>
+            <path d="M22 2l-7 20-4-9-9-4 20-7z"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title-row">
+            <h1 class="brand-name">Preflight</h1>
+            <span class="brand-badge">AWS Hackathon Edition</span>
+          </div>
+          <p class="brand-tagline">Deterministic Amazon Seller Appeal (POA) Validator</p>
+        </div>
+      </div>
+
+      <!-- Non-negotiable Disclaimers & Privacy Notice (PRD §3 & §6) -->
+      <div class="header-disclaimers">
+        <div class="disclaimer-chip">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span><strong>Not affiliated with Amazon.</strong> Not legal advice.</span>
+        </div>
+        <div class="disclaimer-chip privacy-chip">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span><strong>Client-side privacy:</strong> Analysed locally in your browser. Nothing sent to any server.</span>
+        </div>
+        <a href="landing.html" class="header-nav-link" title="Explore the problem, solution, and architecture overview">Overview & Landing ↗</a>
+      </div>
+    </header>
+
+    <!-- Main Workspace: Two-Column Responsive Layout -->
+    <main class="main-content">
+      
+      <!-- LEFT COLUMN: EDITOR & INPUT CONTROLS -->
+      <section class="column-editor" aria-label="Plan of Action Editor">
+        
+        <!-- Controls Bar: Violation Category Selection & Actions -->
+        <div class="editor-header-card">
+          <div class="category-and-demo-row">
+            <div class="field-group flex-1">
+              <label for="enforcementSelect" class="field-label">
+                <span>Suspension Category</span>
+                <span class="field-hint">Select to test category-specific heuristics</span>
+              </label>
+              <div class="select-wrapper">
+                <select id="enforcementSelect" class="custom-select">
+                  <option value="inauthentic" selected>Inauthentic Items / Documentation Gap (Section 3)</option>
+                  <option value="late_shipment">Late Shipment Rate / Fulfillment Defect</option>
+                  <option value="ip_complaint">Intellectual Property (IP) / Rights Owner Claim</option>
+                  <option value="review_manipulation">Customer Review Policy Manipulation</option>
+                  <option value="counterfeit">Counterfeit Item Claims / Brand Authenticity</option>
+                  <option value="safety">Product Safety / Expiration / Hazard Grievance</option>
+                  <option value="condition">Condition Grievance (Used Sold as New)</option>
+                  <option value="linked_account">Multiple / Linked Suspended Accounts</option>
+                  <option value="other">Other Amazon Seller Policy Enforcement</option>
+                </select>
+                <svg class="select-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
+
+            <div class="quick-sample-group">
+              <span class="field-label">Demo Preset</span>
+              <div class="btn-group-pill">
+                <button type="button" id="btnLoadBad" class="btn-preset btn-preset-bad" title="Load failing sample appeal with critical flaws">
+                  <span>Fail (13)</span>
+                </button>
+                <button type="button" id="btnLoadGood" class="btn-preset btn-preset-good" title="Load passing sample appeal with 100/100 score">
+                  <span>Pass (100)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Toolbar -->
+          <div class="editor-actions">
+            <button type="button" id="btnDemoToggle" class="btn btn-secondary btn-demo" title="1-Click Demo: Toggle between failing and passing sample appeals">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <span id="demoToggleLabel">Load Fixed Example</span>
+            </button>
+            <button type="button" id="btnAutoFix" class="btn btn-autofix" title="Watch the score climb: sequentially apply concrete rewrite suggestions">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path>
+              </svg>
+              <span>Auto-Fix POA</span>
+            </button>
+            <button type="button" id="btnUndo" class="btn btn-secondary" title="Undo last change (Ctrl+Z)" disabled aria-label="Undo last change">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 7v6h6"></path>
+                <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+              </svg>
+              <span>Undo</span>
+            </button>
+            <button type="button" id="btnCompare" class="btn btn-secondary" title="Compare baseline vs current draft" aria-label="Compare baseline vs current draft">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="12" y1="3" x2="12" y2="21"></line>
+              </svg>
+              <span>Compare</span>
+            </button>
+            <button type="button" id="btnDownloadZip" class="btn btn-secondary" title="Export ready-to-deploy zip for AWS Amplify Hosting (Deploy without Git)">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Amplify .zip</span>
+            </button>
+            <button type="button" id="btnClear" class="btn btn-ghost" title="Clear editor content">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>Clear</span>
+            </button>
+            <button type="button" id="btnCopy" class="btn btn-primary" title="Copy clean POA to clipboard">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Copy POA</span>
+            </button>
+            <button type="button" id="btnPrint" class="btn btn-secondary" title="Print clean 3-part Plan of Action (Ctrl+P)" aria-label="Print clean Plan of Action">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+              </svg>
+              <span>Print</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Local Draft Restored Affordance Banner (Round 5 P2) -->
+        <div id="draftRestoredBanner" class="draft-restored-banner hidden" role="status" aria-live="polite">
+          <div class="draft-banner-content">
+            <span class="draft-banner-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+            </span>
+            <span>Draft restored from your last local session (saved on-device)</span>
+          </div>
+          <div class="draft-banner-actions">
+            <button type="button" id="btnClearRestoredDraft" class="btn-clear-draft" title="Clear restored draft from local storage">Clear draft</button>
+            <button type="button" id="btnDismissDraftBanner" class="btn-dismiss-draft" aria-label="Dismiss banner" title="Dismiss">&times;</button>
+          </div>
+        </div>
+
+        <!-- Editor Container with Textarea and Synchronized Highlight Overlay -->
+        <div class="editor-panel">
+          <!-- Print-Only Document Header (Round 5 P2) -->
+          <div class="print-only print-header" id="printHeader" aria-hidden="true">
+            <h1>PLAN OF ACTION (POA)</h1>
+            <div class="print-header-meta">
+              <span>Category: <strong id="printCategory">Inauthentic Items</strong></span>
+              <span>Document Date: <strong id="printDate"></strong></span>
+              <span>Prepared for: Amazon Seller Performance</span>
+            </div>
+          </div>
+
+          <div class="editor-toolbar">
+            <div class="editor-toolbar-left">
+              <span class="editor-title">Draft Plan of Action</span>
+              <span class="highlight-legend" title="Text matching critical/high rules is highlighted in-place">
+                <span class="legend-dot red"></span> Critical
+                <span class="legend-dot amber"></span> High/Warning
+              </span>
+            </div>
+            <div class="editor-live-status">
+              <span class="status-pulse"></span>
+              <span id="scoringStatusText">Live analysis active</span>
+            </div>
+          </div>
+
+          <div class="editor-area-wrapper" id="editorAreaWrapper">
+            <!-- Synchronized highlight backdrop layer (PRD §6) -->
+            <div class="editor-backdrop" id="editorBackdrop" aria-hidden="true">
+              <div class="editor-highlights" id="editorHighlights"></div>
+            </div>
+            <!-- Interactive textarea on top -->
+            <label for="poaTextarea" class="sr-only">Draft Plan of Action (POA)</label>
+            <textarea
+              id="poaTextarea"
+              class="poa-textarea"
+              placeholder="Paste your Amazon suspension notice and draft Plan of Action (POA) here...&#10;&#10;Amazon reviewers look for 3 distinct sections:&#10;1. Root Cause Analysis (what in your operation failed)&#10;2. Immediate Corrective Actions (what you have already completed)&#10;3. Long-Term Preventive Measures (systemic processes, cadence, and owners)"
+              spellcheck="false"
+            ></textarea>
+            <!-- Empty state overlay inside editor (Round 4 Item 4) -->
+            <div class="editor-empty-state" id="editorEmptyState">
+              <div class="empty-state-content">
+                <div class="empty-state-icon">
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                </div>
+                <h3 class="empty-state-title">Ready to evaluate your Plan of Action</h3>
+                <p class="empty-state-subtitle">Paste your suspension notice or draft Plan of Action here to inspect structural failure modes before submission.</p>
+                <div class="empty-state-actions">
+                  <button type="button" id="btnEmptyLoadBad" class="btn btn-empty-bad" title="Load an example with fatal disqualifiers">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="15" y1="9" x2="9" y2="15"></line>
+                      <line x1="9" y1="9" x2="15" y2="15"></line>
+                    </svg>
+                    <span>Load a failing example</span>
+                  </button>
+                  <button type="button" id="btnEmptyLoadTemplate" class="btn btn-empty-template" title="Start with Amazon's standard 3-part layout">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>Start from a template</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Editor Footer Status / Document Diagnostics -->
+          <div class="editor-footer-ribbon">
+            <div class="metrics-row">
+              <span class="metric-item">
+                <strong id="metricWords">0</strong> words
+              </span>
+              <span class="metric-separator">•</span>
+              <span class="metric-item">
+                <strong id="metricSentences">0</strong> sentences
+              </span>
+              <span class="metric-separator">•</span>
+              <span class="metric-item" id="lengthStatusBadge">Target: 250–700 words</span>
+            </div>
+            
+            <div class="sections-detected-pill-group" title="Detected 3-part POA structure">
+              <span class="section-indicator" id="secPillRoot" data-detected="false">
+                <span class="sec-dot"></span> Root Cause
+              </span>
+              <span class="section-indicator" id="secPillCorr" data-detected="false">
+                <span class="sec-dot"></span> Corrective
+              </span>
+              <span class="section-indicator" id="secPillPrev" data-detected="false">
+                <span class="sec-dot"></span> Preventive
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bedrock AI Second Opinion Card (PRD §4, §8) -->
+        <div class="bedrock-panel" id="bedrockPanel">
+          <div class="bedrock-header">
+            <div class="bedrock-title-group">
+              <div class="bedrock-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="bedrock-heading">Amazon Bedrock Second Opinion</h3>
+                <p class="bedrock-sub">Optional AI review for subtle investigator nuance. Untrusted POA input is strictly fenced.</p>
+              </div>
+            </div>
+            <div class="bedrock-actions">
+              <button type="button" id="btnPromptInspect" class="btn btn-ghost btn-sm" title="View Bedrock security prompt fencing">
+                <span>Inspect Prompt Fencing</span>
+              </button>
+              <button type="button" id="btnBedrock" class="btn btn-ai">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+                <span>Get AI Second Opinion</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Prompt fencing preview container -->
+          <div id="promptInspectBox" class="prompt-inspect-box hidden">
+            <div class="prompt-inspect-header">
+              <span>Prompt Fencing Architecture (PRD §8)</span>
+              <button type="button" id="btnCloseInspect" class="btn-close-inspect">&times;</button>
+            </div>
+            <pre class="prompt-inspect-code" id="promptInspectCode"></pre>
+          </div>
+
+          <!-- Endpoint configuration drawer for AWS judges / custom deployment -->
+          <div class="bedrock-config-row">
+            <details class="bedrock-config-disclosure">
+              <summary>Endpoint configuration (Lambda Function URL)</summary>
+              <div class="endpoint-input-wrap">
+                <input
+                  type="url"
+                  id="lambdaEndpointInput"
+                  class="custom-input"
+                  placeholder="https://your-lambda-id.lambda-url.region.on.aws/ (optional)"
+                >
+                <span class="endpoint-hint">If left empty, a realistic Bedrock Converse API simulation is generated for demo resilience.</span>
+              </div>
+            </details>
+          </div>
+
+          <!-- Bedrock output container -->
+          <div id="bedrockOutput" class="bedrock-output hidden">
+            <div class="ai-opinion-content" id="aiOpinionText"></div>
+          </div>
+          <div id="bedrockNotice" class="bedrock-notice hidden"></div>
+        </div>
+
+      </section>
+
+      <!-- RIGHT COLUMN: VERDICT & RUBRIC FINDINGS -->
+      <section class="column-verdict" aria-label="Review Verdict and Findings">
+        
+        <!-- VERDICT CARD (PRD §5.5, §6) -->
+        <div class="verdict-card band-rejected" id="verdictCard">
+          <div class="verdict-top-row">
+            <div class="verdict-score-display" aria-live="polite" aria-atomic="true">
+              <div class="score-circle-wrap">
+                <svg class="score-svg" viewBox="0 0 100 100" aria-hidden="true">
+                  <circle class="score-bg-ring" cx="50" cy="50" r="42"></circle>
+                  <circle class="score-progress-ring" id="scoreRing" cx="50" cy="50" r="42"></circle>
+                </svg>
+                <div class="score-number-center">
+                  <span class="score-digit" id="scoreDigit">0</span>
+                  <span class="score-denom">/ 100</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="verdict-info-col">
+              <span class="verdict-eyebrow">ESTIMATED SUBMISSION VERDICT</span>
+              <h2 class="verdict-title" id="verdictTitle" aria-live="polite">WOULD BE REJECTED</h2>
+              <p class="verdict-explanation" id="verdictExplanation">
+                Based on automated intake classifiers and documented structural rejection rules.
+              </p>
+              <div class="critical-cap-badge hidden" id="criticalCapAlert">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                </svg>
+                <span id="criticalCapText">Score capped at 49 due to critical rejection rules</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- DIMENSION SCORE BREAKDOWN BARS (PRD §3 #10, §6) -->
+          <div class="dimensions-breakdown">
+            <div class="breakdown-header">
+              <span class="breakdown-title">Seven-Dimension Scoring Breakdown</span>
+              <span class="breakdown-subtitle">Hover bar for weight & status</span>
+            </div>
+
+            <div class="dimension-bars-list">
+              <!-- Check 1: Root Cause -->
+              <div class="dim-row" data-dim="rootCause">
+                <div class="dim-label-col">
+                  <span class="dim-name">Root Cause Specificity</span>
+                  <span class="dim-weight">22%</span>
+                </div>
+                <div class="dim-bar-track">
+                  <div class="dim-bar-fill" id="barRootCause" style="width: 0%;"></div>
+                </div>
+                <span class="dim-score" id="valRootCause">0</span>
+              </div>
+
+              <!-- Check 2: Corrective Actions -->
+              <div class="dim-row" data-dim="corrective">
+                <div class="dim-label-col">
+                  <span class="dim-name">Corrective Actions Completed</span>
+                  <span class="dim-weight">18%</span>
+                </div>
+                <div class="dim-bar-track">
+                  <div class="dim-bar-fill" id="barCorrective" style="width: 0%;"></div>
+                </div>
+                <span class="dim-score" id="valCorrective">0</span>
+              </div>
+
+              <!-- Check 3: Preventive Measures -->
+              <div class="dim-row" data-dim="preventive">
+                <div class="dim-label-col">
+                  <span class="dim-name">Preventive Controls & Cadence</span>
+                  <span class="dim-weight">18%</span>
+                </div>
+                <div class="dim-bar-track">
+                  <div class="dim-bar-fill" id="barPreventive" style="width: 0%;"></div>
+                </div>
+                <span class="dim-score" id="valPreventive">0</span>
+              </div>
+
+              <!-- Check 4: Tone & Ownership -->
+              <div class="dim-row" data-dim="tone">
+                <div class="dim-label-col">
+                  <span class="dim-name">Accountability & Tone</span>
+                  <span class="dim-weight">15%</span>
+                </div>
+                <div class="dim-bar-track">
+                  <div class="dim-bar-fill" id="barTone" style="width: 0%;"></div>
+                </div>
+                <span class="dim-score" id="valTone">0</span>
+              </div>
+
+              <!-- Check 5: Evidence -->
+              <div class="dim-row" data-dim="evidence">
+                <div class="dim-label-col">
+                  <span class="dim-name">Documentation & Invoices</span>
+                  <span class="dim-weight">12%</span>
+                </div>
+                <div class="dim-bar-track">
+                  <div class="dim-bar-fill" id="barEvidence" style="width: 0%;"></div>
+                </div>
+                <span class="dim-score" id="valEvidence">0</span>
+              </div>
+
+              <!-- Check 6: Structure -->
+              <div class="dim-row" data-dim="structure">
+                <div class="dim-label-col">
+                  <span class="dim-name">Structure & Formatting</span>
+                  <span class="dim-weight">10%</span>
+                </div>
+                <div class="dim-bar-track">
+                  <div class="dim-bar-fill" id="barStructure" style="width: 0%;"></div>
+                </div>
+                <span class="dim-score" id="valStructure">0</span>
+              </div>
+
+              <!-- Check 7: Length -->
+              <div class="dim-row" data-dim="length">
+                <div class="dim-label-col">
+                  <span class="dim-name">Length & Readability</span>
+                  <span class="dim-weight">5%</span>
+                </div>
+                <div class="dim-bar-track">
+                  <div class="dim-bar-fill" id="barLength" style="width: 0%;"></div>
+                </div>
+                <span class="dim-score" id="valLength">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FINDINGS LIST CONTAINER -->
+        <div class="findings-panel">
+          <!-- Confidence Warning Banner when sections were inferred (Round 3 Item 6) -->
+          <div id="sectionConfidenceBanner" class="confidence-banner" style="display: none;" role="status">
+            <span class="confidence-icon">ℹ️</span>
+            <span class="confidence-text">Sections were inferred because no headings were found — scoring is approximate. Add headings for an accurate read.</span>
+          </div>
+
+          <div class="findings-header">
+            <div class="findings-title-group">
+              <h3 class="findings-heading">Actionable Findings</h3>
+              <span class="findings-count-badge" id="totalFindingsBadge">0 issues</span>
+            </div>
+            
+            <!-- Severity Filter Pills -->
+            <div class="findings-filter-tabs" role="tablist">
+              <button type="button" class="tab-pill active" data-filter="all">All</button>
+              <button type="button" class="tab-pill filter-critical" data-filter="critical">
+                Critical <span class="pill-count" id="countCritical">0</span>
+              </button>
+              <button type="button" class="tab-pill filter-high" data-filter="high">
+                High <span class="pill-count" id="countHigh">0</span>
+              </button>
+              <button type="button" class="tab-pill filter-medium" data-filter="medium">
+                Med <span class="pill-count" id="countMedium">0</span>
+              </button>
+              <button type="button" class="tab-pill filter-low" data-filter="low">
+                Low <span class="pill-count" id="countLow">0</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Public Provenance Disclaimer (Round 3 Item 4) -->
+          <div class="findings-provenance-note">
+            Rules are derived from publicly documented appeal failure patterns. Amazon does not publish its internal criteria.
+          </div>
+
+          <!-- Empty State or Findings Cards List -->
+          <div class="findings-list" id="findingsList" role="list" aria-live="polite" aria-label="Actionable findings list">
+            <!-- Rendered dynamically by app.js -->
+          </div>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- App Footer -->
+    <footer class="app-footer">
+      <div class="footer-left">
+        <span>Preflight · AWS First Commit Hackathon 2026</span>
+        <span class="footer-sep">·</span>
+        <span>Built for third-party Amazon sellers</span>
+      </div>
+      <div class="footer-right">
+        <span>Runs 100% locally in browser</span>
+        <span class="footer-sep">·</span>
+        <span>AWS Bedrock Integration Ready</span>
+      </div>
+    </footer>
+
+  <!-- Before / After Comparison Modal (Round 3 Item 7) -->
+  <div id="compareModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="compareModalTitle">
+    <div class="modal-card compare-modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h3 id="compareModalTitle" class="modal-title">Before & After Comparison</h3>
+          <span class="modal-subtitle">Baseline draft vs. currently optimized appeal</span>
+        </div>
+        <button type="button" id="btnCloseCompare" class="btn-close-modal" aria-label="Close comparison">&times;</button>
+      </div>
+      <div class="compare-grid">
+        <div class="compare-col">
+          <div class="compare-col-header">
+            <span class="compare-badge badge-baseline">Baseline / Original</span>
+            <span id="compareBaselineWords" class="compare-meta">0 words</span>
+          </div>
+          <div id="compareBaselineText" class="compare-content-box" tabindex="0"></div>
+        </div>
+        <div class="compare-col">
+          <div class="compare-col-header">
+            <span class="compare-badge badge-current">Current / Optimized</span>
+            <span id="compareCurrentWords" class="compare-meta">0 words</span>
+          </div>
+          <div id="compareCurrentText" class="compare-content-box" tabindex="0"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btnRestoreBaseline" class="btn btn-secondary">Restore Baseline</button>
+        <button type="button" id="btnKeepCurrent" class="btn btn-primary">Keep Current Draft</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Load Scripts -->
+  <script src="rubric.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
